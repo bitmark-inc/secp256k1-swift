@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import CryptoKit
 import secp256k1_c
 
 public enum Secp256k1 {
@@ -193,7 +194,7 @@ extension Secp256k1.Signing {
             }
             
             let privkey = Data(privateKeyBytes).withUnsafeBytes({ keyBytesPtr in Array(keyBytesPtr) })
-            let message = data.withUnsafeBytes({ keyBytesPtr in Array(keyBytesPtr) })
+            let message = SHA256.hash(data: data.withUnsafeBytes({ keyBytesPtr in Array(keyBytesPtr) })).withUnsafeBytes({ keyBytesPtr in Array(keyBytesPtr) })
             
             var signature = [UInt8](repeating: 0, count: 64)
             var cSig = secp256k1_ecdsa_signature()
@@ -232,7 +233,7 @@ extension Secp256k1.Signing {
             var cPubkey = secp256k1_pubkey()
             var cSig = secp256k1_ecdsa_signature()
             let sig = signature.rawRepresentation.withUnsafeBytes({ keyBytesPtr in Array(keyBytesPtr) })
-            let msg = data.withUnsafeBytes({ keyBytesPtr in Array(keyBytesPtr) })
+            let msg = SHA256.hash(data: data.withUnsafeBytes({ keyBytesPtr in Array(keyBytesPtr) })).withUnsafeBytes({ keyBytesPtr in Array(keyBytesPtr) })
             
             guard secp256k1_ec_pubkey_parse(context, &cPubkey, keyBytes, keyBytes.count) == 1,
                   secp256k1_ecdsa_signature_parse_compact(context, &cSig, sig) == 1,

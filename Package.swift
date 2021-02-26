@@ -5,6 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "Secp256k1",
+    platforms: [.iOS(.v13)],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
@@ -67,8 +68,7 @@ let package = Package(
                 "swift-crypto/Sources/Crypto/Util/BoringSSL/SafeCompare_boring.swift",
                 "SafeCompare.swift",
                 "Secp256k1.swift",
-                "Secp256k1Error.swift",
-                "Utilities.swift"
+                "Secp256k1Error.swift"
             ]
         ),
         .testTarget(

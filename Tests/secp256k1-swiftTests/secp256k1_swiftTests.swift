@@ -32,6 +32,20 @@ final class secp256k1_swiftTests: XCTestCase {
         XCTAssertEqual(expectedPrivateKey, privatekey.rawRepresentation.hexString)
         XCTAssertEqual(expectedPublicKey, privatekey.publicKey.rawRepresentation.hexString)
     }
+    
+    func testSignatureAndVerifySignature() {
+        let privateKeyBytes = Data(hexString: "3de2fed8700e252d02026fec2d061b07ecc9fd11afa1f1321fc28b199d83688d")!.bytes
+        let privatekey = try! Secp256k1.Signing.PrivateKey(rawRepresentation: privateKeyBytes)
+        
+        XCTAssertEqual("02a0a8f329b2b14454fa9c757743c909595503e5a3fdb142e112d9f3c100c1a972", privatekey.publicKey.rawRepresentation.hexString)
+        
+        let message = "randomString".data(using: .utf8)!.bytes
+        let sig = try! privatekey.signature(for: message)
+        
+        XCTAssertEqual("3045022100a439460e6c0406e70397bd754fc21808860798f8df9c84c5e5cb3d62872dfc85022068c7336a801023f83ab82b9ef49228e2cc9807a389027d921af56d829ec00fd0", sig.derRepresentation.hexString)
+        XCTAssertTrue(privatekey.publicKey.isValidSignature(sig, for: message))
+
+    }
 
     static var allTests = [
         ("testCompressedKeypairCreation", testCompressedKeypairCreation),
