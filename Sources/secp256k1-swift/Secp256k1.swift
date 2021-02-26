@@ -244,13 +244,36 @@ extension Secp256k1.Signing {
     }
     
     @usableFromInline struct ECDSASignatureImplementation {
-        private let signatureBytes: [UInt8]
-        
+        private let rawSignatureBytes: [UInt8]
+        private let derSignatureBytes: [UInt8]
+
         @usableFromInline init<D: ContiguousBytes>(rawRepresentation data: D) throws {
-            self.signatureBytes = data.withUnsafeBytes({ keyBytesPtr in Array(keyBytesPtr) })
+            self.rawSignatureBytes = data.withUnsafeBytes({ keyBytesPtr in Array(keyBytesPtr) })
+            
+            // Initialize context
+            let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_VERIFY | SECP256K1_CONTEXT_SIGN))!
+
+            defer {
+                // Destory context after creation
+                secp256k1_context_destroy(context)
+            }
+            
+            var derSize: Int = 71
+            var derSignature = [UInt8](repeating: 0, count: derSize)
+            var cSig = secp256k1_ecdsa_signature()
+
+            // parse and serialize der
+            guard secp256k1_ecdsa_signature_parse_compact(context, &cSig, rawSignatureBytes) == 1,
+                  secp256k1_ecdsa_signature_serialize_der(context, &derSignature, &derSize, &cSig) == 1 else {
+                throw Secp256k1Error.invalidSignature
+            }
+            
+            self.derSignatureBytes = derSignature
         }
         
         @usableFromInline init<D: ContiguousBytes>(derRepresentation data: D) throws {
+            self.derSignatureBytes = data.withUnsafeBytes({ keyBytesPtr in Array(keyBytesPtr) })
+            
             // Initialize context
             let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_VERIFY | SECP256K1_CONTEXT_SIGN))!
 
@@ -269,37 +292,15 @@ extension Secp256k1.Signing {
                 throw Secp256k1Error.signingError
             }
             
-            self.signatureBytes = signature
-        }
-        
-        init(_ bytes: [UInt8]) {
-            self.signatureBytes = bytes
+            self.rawSignatureBytes = signature
         }
         
         @usableFromInline var rawRepresentation: Data {
-            Data(self.signatureBytes)
+            Data(self.rawSignatureBytes)
         }
         
         @usableFromInline var derRepresentation: Data {
-            // Initialize context
-            let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_VERIFY | SECP256K1_CONTEXT_SIGN))!
-
-            defer {
-                // Destory context after creation
-                secp256k1_context_destroy(context)
-            }
-            
-            var derSize: Int = 71
-            var derSignature = [UInt8](repeating: 0, count: derSize)
-            var cSig = secp256k1_ecdsa_signature()
-
-            // parse and serialize der
-            guard secp256k1_ecdsa_signature_parse_compact(context, &cSig, signatureBytes) == 1,
-                  secp256k1_ecdsa_signature_serialize_der(context, &derSignature, &derSize, &cSig) == 1 else {
-                return Data(derSignature)
-            }
-            
-            return Data(derSignature)
+            Data(self.derSignatureBytes)
         }
     }
 }

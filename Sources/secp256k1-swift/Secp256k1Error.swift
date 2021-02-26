@@ -10,12 +10,15 @@ import Foundation
 
 public enum Secp256k1Error: Error {
     case signingError
+    case invalidSignature
     case other(reason: String)
 
     var localizedDescription: String {
         switch self {
         case .signingError:
             return "singing error"
+        case .invalidSignature:
+            return "invalid signature"
         case .other(let reason):
             return reason
         }
