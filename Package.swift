@@ -9,7 +9,7 @@ let package = Package(
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "Secp256k1",
-            targets: ["secp256k1_c", "secp256k1_swift"]),
+            targets: ["secp256k1_swift"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -66,7 +66,9 @@ let package = Package(
                 "swift-crypto/Sources/Crypto/Util/BoringSSL/RNG_boring.swift",
                 "swift-crypto/Sources/Crypto/Util/BoringSSL/SafeCompare_boring.swift",
                 "SafeCompare.swift",
-                "Secp256k1.swift"
+                "Secp256k1.swift",
+                "Secp256k1Error.swift",
+                "Utilities.swift"
             ]
         ),
         .testTarget(
