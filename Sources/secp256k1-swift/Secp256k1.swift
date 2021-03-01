@@ -259,7 +259,7 @@ extension Secp256k1.Signing {
                 secp256k1_context_destroy(context)
             }
             
-            var derSize: Int = 71
+            var derSize: Int = 72
             var derSignature = [UInt8](repeating: 0, count: derSize)
             var cSig = secp256k1_ecdsa_signature()
 
