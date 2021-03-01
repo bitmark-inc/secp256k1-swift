@@ -283,12 +283,11 @@ extension Secp256k1.Signing {
                 secp256k1_context_destroy(context)
             }
             
-            let bytes = data.withUnsafeBytes({ keyBytesPtr in Array(keyBytesPtr) })
             var signature = [UInt8](repeating: 0, count: 64)
             var cSig = secp256k1_ecdsa_signature()
             
             // Parse signature
-            guard secp256k1_ecdsa_signature_parse_der(context, &cSig, bytes, bytes.count) == 1,
+            guard secp256k1_ecdsa_signature_parse_der(context, &cSig, derSignatureBytes, derSignatureBytes.count) == 1,
                   secp256k1_ecdsa_signature_serialize_compact(context, &signature, &cSig) == 1 else {
                 throw Secp256k1Error.signingError
             }
