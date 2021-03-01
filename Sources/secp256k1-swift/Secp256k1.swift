@@ -269,6 +269,10 @@ extension Secp256k1.Signing {
                 throw Secp256k1Error.invalidSignature
             }
             
+            while (derSignature.last == 0) {
+                derSignature.removeLast()
+            }
+            
             self.derSignatureBytes = derSignature
         }
         
